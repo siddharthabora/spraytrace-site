@@ -128,13 +128,11 @@ nav{position:sticky;top:0;z-index:20;background:rgba(10,20,28,.92);backdrop-filt
 .sample{font-size:13px;color:#8FA7B3;margin-top:10px}
 .fair{margin-top:22px;color:var(--muted);max-width:760px}
 /* field photos */
-.gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
-.gallery figure[hidden]{display:none}.gallery figure{margin:0;border-radius:12px;overflow:hidden;background:#DCE5DE;position:relative;grid-column:span 2}
-.gallery figure.wide{grid-column:span 4;grid-row:span 2}
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.gallery figure[hidden]{display:none}.gallery figure{margin:0;border-radius:12px;overflow:hidden;background:#DCE5DE;position:relative}
 .gallery img{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:3/2}
-.gallery figure.wide img{aspect-ratio:auto}
-.gallery figcaption{position:absolute;left:10px;bottom:10px;right:10px;font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
-.gallery figcaption b{font-weight:500;background:rgba(10,20,28,.7);padding:2px 8px;border-radius:6px;margin-right:6px;text-shadow:none}
+.gallery figure::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.55));pointer-events:none}
+.gallery figcaption{position:absolute;left:12px;bottom:10px;right:12px;font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);z-index:1}
 /* evidence */
 .ev-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(24px,4vw,56px)}
 .ev{display:grid;gap:14px}
@@ -197,8 +195,8 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
 .rv.on{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.link,.led{animation:none}html{scroll-behavior:auto}.btn{transition:none}}
 @media (max-width:1100px){.steps{grid-template-columns:repeat(3,minmax(0,1fr))}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.alert-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.alert-grid .phone{grid-column:1/-1;max-width:460px}.road{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:28px}}
-@media (max-width:900px){.links{display:none}.hero-grid,.demo-grid,.tag-grid,.ev-grid,.two,.contact-grid{grid-template-columns:minmax(0,1fr)}.parts{grid-template-columns:minmax(0,1fr)}.tag-sheet{max-width:460px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery figure,.gallery figure.wide{grid-column:span 2;grid-row:auto}.gallery figure.wide img{aspect-ratio:3/2}}
-@media (max-width:600px){body{font-size:16px}.facts{grid-template-columns:minmax(0,1fr)}.steps,.cards,.alert-grid,.road{grid-template-columns:minmax(0,1fr)}form{grid-template-columns:minmax(0,1fr)}.nav-in .brand img{height:32px}.spec th{width:34%}.gallery{grid-template-columns:minmax(0,1fr)}.gallery figure,.gallery figure.wide{grid-column:auto}.foot-r{text-align:left}.nav-in{gap:12px}.nav-in .btn{padding:0 12px;font-size:14px}}
+@media (max-width:900px){.links{display:none}.hero-grid,.demo-grid,.tag-grid,.ev-grid,.two,.contact-grid{grid-template-columns:minmax(0,1fr)}.parts{grid-template-columns:minmax(0,1fr)}.tag-sheet{max-width:460px}}
+@media (max-width:600px){body{font-size:16px}.facts{grid-template-columns:minmax(0,1fr)}.steps,.cards,.alert-grid,.road{grid-template-columns:minmax(0,1fr)}form{grid-template-columns:minmax(0,1fr)}.nav-in .brand img{height:32px}.spec th{width:34%}.gallery{grid-template-columns:minmax(0,1fr)}.foot-r{text-align:left}.nav-in{gap:12px}.nav-in .btn{padding:0 12px;font-size:14px}}
 </style>
 </head>
 <body>
@@ -523,12 +521,10 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
       <p class="lead">Rain, chemical splash, shade-tree canopy and patchy mobile signal. The tag is designed for the conditions spray workers face every round.</p>
     </div>
     <div class="gallery">
-      <figure class="wide" hidden><img src="assets/img/hero-tag-on-sprayer.jpg" alt="SprayTrace tag strapped to a knapsack sprayer in an Assam tea garden"><figcaption><b>Concept render</b>The tag on a working knapsack sprayer</figcaption></figure>
-      <figure hidden><img src="assets/img/field-worker-spraying.jpg" alt="Spray worker walking a tea row with a tagged sprayer"><figcaption><b>Concept render</b>Spraying as usual</figcaption></figure>
-      <figure hidden><img src="assets/img/tag-closeup-studio.jpg" alt="Close-up of the sealed SprayTrace tag beside fresh tea shoots"><figcaption><b>Concept render</b>Sealed, with tamper screws</figcaption></figure>
-      <figure hidden><img src="assets/img/mixing-point.jpg" alt="Tagged sprayers lined up at a tea estate mixing point"><figcaption><b>Concept render</b>Tanks issued at the mixing point</figcaption></figure>
-      <figure hidden><img src="assets/img/division-hub.jpg" alt="Radio hub on the roof of a tea estate division office"><figcaption><b>Concept render</b>One hub per division</figcaption></figure>
-      <figure hidden><img src="assets/img/supervisor-alert.jpg" alt="Field supervisor checking an alert on an Android phone"><figcaption><b>Concept render</b>Phase 2: alerts on the supervisor's phone</figcaption></figure>
+      <figure hidden><img src="assets/img/field-worker-spraying.jpg" alt="Spray worker walking a tea row with a tagged sprayer"><figcaption>Spraying as usual</figcaption></figure>
+      <figure hidden><img src="assets/img/tag-closeup-studio.jpg" alt="Close-up of the sealed SprayTrace tag beside fresh tea shoots"><figcaption>Sealed, with tamper screws</figcaption></figure>
+      <figure hidden><img src="assets/img/mixing-point.jpg" alt="Tagged sprayers lined up at a tea estate mixing point"><figcaption>Tanks issued at the mixing point</figcaption></figure>
+      <figure hidden><img src="assets/img/division-hub.jpg" alt="Radio hub on the roof of a tea estate division office"><figcaption>One hub per division</figcaption></figure>
     </div>
   </div>
 </section>
