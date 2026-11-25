@@ -2,7 +2,7 @@
 
 Static site for GitHub Pages. No build step: `index.html` plus the `assets/` folder.
 
-## Publish on GitHub Pages (about 5 minutes)
+## Publish on GitHub Pages
 
 1. Create a public repository named `spraytrace-site` under your GitHub account.
 2. Upload everything in this folder (including the hidden `.nojekyll` file) to the repository root.
@@ -22,7 +22,7 @@ Until the ID is set, the form shows "This form is not connected yet" instead of 
 
 Each submission includes a `cta` field showing which button the visitor clicked (`nav`, `hero`, `demo` or `direct`).
 
-## Add the Gemini images
+## Add the product images
 
 Save the images with these exact names in `assets/img/`:
 
