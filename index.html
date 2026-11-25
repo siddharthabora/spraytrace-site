@@ -182,6 +182,8 @@ input::placeholder,textarea::placeholder{color:#6E8691}
 .hp{position:absolute;left:-5000px}
 .form-foot{grid-column:1/-1;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .form-foot small{color:#8FA7B3;font-size:14px}
+.f small{font-size:13px;color:#8FA7B3}
+.f input[aria-invalid="true"]{border-color:#E5684F;box-shadow:0 0 0 2px rgba(229,104,79,.22)}
 .status{grid-column:1/-1;font-size:15px;border-radius:10px;padding:12px 14px;display:none}
 .status.ok{display:block;background:rgba(92,225,230,.1);border:1px solid #2E6E73;color:#BFF3F5}
 .status.err{display:block;background:rgba(229,104,79,.1);border:1px solid #6E3A30;color:#F3C6BC}
@@ -617,8 +619,8 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
           <option value="">Choose one</option>
           <option>Estate owner</option><option>Manager or assistant manager</option><option>Field supervisor</option><option>Researcher or institution</option><option>Investor or partner</option><option>Other</option>
         </select></div>
-      <div class="f"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel"></div>
-      <div class="f"><label for="sprayers">Knapsack sprayers on the estate</label><input id="sprayers" name="sprayers" type="number" min="0" inputmode="numeric" placeholder="For example 40"></div>
+      <div class="f"><label for="phone">Phone (10 digits)</label><input id="phone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" autocomplete="tel"><small>10 digits, no spaces, +91 or 0</small></div>
+      <div class="f"><label for="sprayers">Knapsack sprayers on the estate</label><input id="sprayers" name="sprayers" type="text" inputmode="numeric" pattern="[0-9]{1,4}" maxlength="4" placeholder="For example 40"></div>
       <div class="f full"><label for="msg">Message</label><textarea id="msg" name="message" placeholder="Divisions, spray programme, anything we should know"></textarea></div>
       <div class="status" id="formStatus" role="status" aria-live="polite"></div>
       <div class="form-foot"><button class="btn btn-primary" type="submit" id="sendBtn">Send enquiry</button><small>We use your details only to reply to this enquiry.</small></div>
@@ -666,9 +668,43 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
     el.addEventListener('click', () => { if (ctaSource) ctaSource.value = el.dataset.cta; });
   });
   const show = (kind, text) => { status.className = 'status ' + kind; status.textContent = text; };
+  const nameEl = document.getElementById('name');
+  const emailEl = document.getElementById('email');
+  const orgEl = document.getElementById('org');
+  const phoneEl = document.getElementById('phone');
+  const sprayersEl = document.getElementById('sprayers');
+  const clearInvalid = (el) => el.removeAttribute('aria-invalid');
+  const markInvalid = (el, text) => { el.setAttribute('aria-invalid', 'true'); show('err', text); el.focus(); };
+  [nameEl, emailEl, orgEl, phoneEl, sprayersEl].forEach((el) => {
+    el.addEventListener('input', () => clearInvalid(el));
+  });
+  const normalisePhone = (raw) => {
+    let d = String(raw).replace(/\D+/g, '');
+    if (d.length === 12 && d.slice(0, 2) === '91') d = d.slice(2);
+    else if (d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
+    return d.slice(0, 10);
+  };
+  phoneEl.addEventListener('input', () => {
+    const v = normalisePhone(phoneEl.value);
+    if (phoneEl.value !== v) phoneEl.value = v;
+  });
+  sprayersEl.addEventListener('input', () => {
+    const v = sprayersEl.value.replace(/\D+/g, '').slice(0, 4);
+    if (sprayersEl.value !== v) sprayersEl.value = v;
+  });
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    if (!form.checkValidity()) { show('err', 'Please fill in your name, a valid email and your estate or organisation.'); form.reportValidity(); return; }
+    [nameEl, emailEl, orgEl, phoneEl, sprayersEl].forEach(clearInvalid);
+    if (!nameEl.value.trim() || !emailEl.checkValidity() || !orgEl.value.trim()) {
+      const bad = !nameEl.value.trim() ? nameEl : (!emailEl.checkValidity() ? emailEl : orgEl);
+      markInvalid(bad, 'Please fill in your name, a valid email and your estate or organisation.'); return;
+    }
+    if (phoneEl.value && !/^[0-9]{10}$/.test(phoneEl.value)) {
+      markInvalid(phoneEl, 'Please enter a 10-digit phone number, or leave it blank.'); return;
+    }
+    if (sprayersEl.value && !/^[0-9]{1,4}$/.test(sprayersEl.value)) {
+      markInvalid(sprayersEl, 'Please enter the number of sprayers as a whole number.'); return;
+    }
     if (form.action.includes('REPLACE_WITH_FORM_ID')) { show('err', 'This form is not connected yet. Please try again later.'); return; }
     btn.disabled = true; btn.textContent = 'Sending…';
     try {
