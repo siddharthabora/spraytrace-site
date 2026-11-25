@@ -15,10 +15,12 @@ If you use a different repository name, change the two `og:` URLs near the top o
 
 1. In Formspree, create a new form (for example "SprayTrace pilot enquiries") with the inbox that should receive enquiries.
 2. Copy its form ID (the part after `/f/` in the endpoint, such as `xrejqzlj`).
-3. In `index.html`, replace `REPLACE_WITH_FORM_ID` with that ID. It appears once, in the form's `action`.
+3. In `index.html`, replace `REPLACE_WITH_FORM_ID` with that ID. Replace it only in the form's `action` attribute; the second occurrence in the script is a guard and must stay unchanged.
 4. Submit a test enquiry from the live site and confirm it in Formspree. The first submission may ask you to verify the address.
 
 Until the ID is set, the form shows "This form is not connected yet" instead of failing silently.
+
+Each submission includes a `cta` field showing which button the visitor clicked (`nav`, `hero`, `demo` or `direct`).
 
 ## Add the Gemini images
 

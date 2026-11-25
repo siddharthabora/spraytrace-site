@@ -211,7 +211,7 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
       <a href="#evidence">Field test</a>
       <a href="#team">Team</a>
     </div>
-    <a class="btn btn-primary" href="#contact">Request a pilot</a>
+    <a class="btn btn-primary" href="#contact" data-cta="nav">Request a pilot</a>
   </div>
 </nav>
 
@@ -221,7 +221,7 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
       <h1>Know every tank was sprayed, <span>while the worker is still in the section.</span></h1>
       <p class="lead">SprayTrace is a sealed tag that straps onto the knapsack sprayers your workers already carry. It counts pump strokes, maps coverage against your sections and alerts the supervisor over a private radio link, with no mobile network and no wires to loosen.</p>
       <div class="cta">
-        <a class="btn btn-primary" href="#contact">Request a pilot</a>
+        <a class="btn btn-primary" href="#contact" data-cta="hero">Request a pilot</a>
         <a class="btn btn-ghost" href="#demo">Watch the demo</a>
       </div>
       <div class="facts">
@@ -405,7 +405,7 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
     <div class="rv">
       <h2>See it in just over a minute</h2>
       <p class="lead" style="margin-top:16px">How the tag measures what was pumped, how alerts reach the supervisor and what the section report shows at the end of the day.</p>
-      <div class="cta"><a class="btn btn-primary" href="#contact">Request a pilot</a></div>
+      <div class="cta"><a class="btn btn-primary" href="#contact" data-cta="demo">Request a pilot</a></div>
     </div>
   </div>
 </section>
@@ -605,8 +605,9 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
         <li>Pass criteria are agreed in writing before the trial starts.</li>
       </ul>
     </div>
-    <form id="pilotForm" action="https://formspree.io/f/REPLACE_WITH_FORM_ID" method="POST" novalidate>
+    <form id="pilotForm" action="https://formspree.io/f/meagnkyo" method="POST" novalidate>
       <input type="hidden" name="_subject" value="SprayTrace: new pilot enquiry">
+      <input type="hidden" name="cta" id="ctaSource" value="direct">
       <div class="hp" aria-hidden="true"><label for="gotcha">Leave this empty</label><input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off"></div>
       <div class="f"><label for="name">Your name <i>*</i></label><input id="name" name="name" autocomplete="name" required></div>
       <div class="f"><label for="email">Email <i>*</i></label><input id="email" name="email" type="email" autocomplete="email" required></div>
@@ -660,6 +661,10 @@ footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-siz
   const form = document.getElementById('pilotForm');
   const status = document.getElementById('formStatus');
   const btn = document.getElementById('sendBtn');
+  const ctaSource = document.getElementById('ctaSource');
+  document.querySelectorAll('[data-cta]').forEach((el) => {
+    el.addEventListener('click', () => { if (ctaSource) ctaSource.value = el.dataset.cta; });
+  });
   const show = (kind, text) => { status.className = 'status ' + kind; status.textContent = text; };
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
