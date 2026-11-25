@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SprayTrace by AgSpert</title>
+<meta name="description" content="SprayTrace is a sealed tag that straps onto tea estate knapsack sprayers. It counts pump strokes, maps coverage and alerts the supervisor in real time over a private radio link.">
+<meta property="og:title" content="SprayTrace by AgSpert">
+<meta property="og:description" content="Know every tank was sprayed, while the worker is still in the section.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://siddharthabora.github.io/spraytrace-site/assets/og-image.png">
+<meta property="og:url" content="https://siddharthabora.github.io/spraytrace-site/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/logo/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a field engineer briefing an estate manager. Plain, exact, no hype.
+   IDEA: an engineering drawing sheet laid over a tea garden: night drawing bands and paper bands.
+   PICTURE: the real system blueprint (AG-ST-101) with a live radio link and blinking tag light.
+   COLOUR and TYPE: drawing night #0A141C, tag cyan, alert amber, tea-leaf green on paper; Space Grotesk over IBM Plex Sans.
+   LAYOUT: hero title beside the drawing, then alternating night and paper bands down to the pilot form above the footer. */
+:root{--night:#0A141C;--night2:#0F2230;--rule:#1F3A4A;--cyan:#5CE1E6;--teal:#0B7A84;--amber:#F2B84B;--paper:#F3F5F0;--card:#FFFFFF;--ink:#10201A;--muted:#4F6168;--soft:#A9BEC7;--leaf:#2F6B4F;--danger:#E5684F}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 "IBM Plex Sans",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:600;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,4.6vw,54px);letter-spacing:-.02em}
+h2{font-size:clamp(28px,3.4vw,42px);letter-spacing:-.015em}
+h3{font-size:20px;line-height:1.25}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto}
+[hidden]{display:none!important}.band{padding:clamp(56px,7vw,104px) max(5vw,18px)}
+.night{background:var(--night);color:#E6F1F5}
+.night .lead,.night .sub{color:#B9CBD2}
+.grid-bg{background-image:linear-gradient(rgba(92,225,230,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(92,225,230,.06) 1px,transparent 1px);background-size:40px 40px}
+.lead{font-size:clamp(17px,1.5vw,19px);max-width:62ch;color:var(--muted)}
+.sub{color:var(--muted);max-width:66ch}
+.head{display:grid;gap:14px;margin-bottom:40px;max-width:780px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:10px;font:600 16px "Space Grotesk",sans-serif;text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:transform .15s ease,background .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.btn-primary{background:var(--cyan);color:#06262B}
+.btn-ghost{border-color:#3A5A6A;color:#E6F1F5}
+.btn-ghost:hover{background:rgba(92,225,230,.08)}
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(10,20,28,.92);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--rule)}
+.nav-in{display:flex;align-items:center;gap:24px;max-width:1240px;margin:0 auto;padding:10px max(5vw,18px)}
+.nav-in .brand img{height:38px;display:block}
+.links{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap}
+.links a{color:#C9D8DE;text-decoration:none;font-size:15px}
+.links a:hover{color:var(--cyan)}
+.nav-in .btn{min-height:42px;padding:0 16px;font-size:15px;white-space:nowrap;flex:none}
+/* hero */
+.hero{padding-top:clamp(40px,5vw,72px)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.hero h1 span{color:var(--cyan)}
+.hero .lead{margin-top:20px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:clamp(36px,5vw,60px);border-top:1px solid var(--rule)}
+.facts div{padding:18px 18px 0 0}
+.facts b{display:block;font:600 22px "Space Grotesk",sans-serif;color:#fff}
+.facts span{font-size:14px;color:#9FB4BE}
+.sheet{position:relative;border:1px solid var(--rule);border-radius:10px;background:rgba(15,34,48,.55);padding:12px;aspect-ratio:900/720}
+.sheet .tb{position:absolute;right:12px;bottom:10px;font:12px "IBM Plex Mono",monospace;color:#7E97A2}
+.bp-svg{display:block}
+.link{animation:flow 1.6s linear infinite}
+.led{animation:blink 2s ease-in-out infinite}
+@keyframes flow{to{stroke-dashoffset:-22}}
+@keyframes blink{0%,70%,100%{opacity:1}80%{opacity:.25}}
+/* problem */
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{background:var(--card);border:1px solid #DDE4DF;border-radius:12px;padding:22px}
+.card h3{margin-bottom:8px}
+.card p{color:var(--muted);font-size:16px}
+.card .ic{width:40px;height:40px;margin-bottom:14px;display:block}
+.quote{margin-top:28px;padding:22px 24px;border-left:4px solid var(--leaf);background:#E7EEE8;border-radius:0 12px 12px 0;max-width:860px}
+.quote p{font-size:18px}
+.quote small{display:block;margin-top:8px;color:var(--muted);font-size:14px}
+/* steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;counter-reset:s}
+.steps li{position:relative;background:var(--card);border:1px solid #DDE4DF;border-radius:12px;padding:20px;counter-increment:s}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font:600 15px "Space Grotesk";margin-bottom:12px}
+.steps p{color:var(--muted);font-size:15px;margin-top:6px}
+.parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:22px}
+.part{border-radius:12px;padding:22px;background:var(--night);color:#E6F1F5}
+.part .k{font:500 13px "IBM Plex Mono",monospace;color:var(--cyan)}
+.part h3{margin:6px 0 8px}
+.part p{color:#B9CBD2;font-size:15px}
+/* demo */
+.demo-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr);gap:clamp(24px,4vw,48px);align-items:center}
+.player{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9}
+.player video{width:100%;height:100%;display:block}
+.note{font-size:14px;color:#8FA7B3;margin-top:10px}
+/* tag */
+.tag-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(24px,4vw,56px);align-items:start}
+.tag-sheet{border:1px solid var(--rule);border-radius:10px;padding:14px;background:rgba(15,34,48,.55);aspect-ratio:520/680;max-height:720px}
+.spec{width:100%;border-collapse:collapse;font-size:16px}
+.spec th,.spec td{text-align:left;padding:14px 12px 14px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.spec th{width:28%;font:500 15px "Space Grotesk",sans-serif;color:var(--cyan)}
+.spec td{color:#CFDDE2}
+.spec td small{display:block;color:#8FA7B3;font-size:14px;margin-top:4px}
+/* alerts */
+.alert-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+.alist{background:var(--card);border:1px solid #DDE4DF;border-radius:12px;padding:22px}
+.alist h3{margin-bottom:12px}
+.alist ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.alist li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;font-size:16px}
+.alist li::before{content:"";width:12px;height:12px;border-radius:50%;margin-top:7px;background:var(--danger)}
+.alist.info li::before{background:#9DB0B8}
+.alist li span{color:var(--muted);display:block;font-size:15px}
+.phone{background:var(--night);border-radius:22px;padding:16px;color:#E6F1F5;box-shadow:0 20px 40px -24px rgba(10,20,28,.6)}
+.phone .bar{display:flex;justify-content:space-between;font:12px "IBM Plex Mono",monospace;color:#8FA7B3;margin-bottom:12px}
+.al{border:1px solid #4A2A24;background:#1E1614;border-radius:12px;padding:14px}
+.al .t{display:flex;justify-content:space-between;gap:8px;font:600 16px "Space Grotesk",sans-serif}
+.al .t em{font-style:normal;color:var(--danger);font-size:13px;font-family:"IBM Plex Mono",monospace}
+.al p{font-size:15px;color:#D6C9C4;margin-top:8px}
+.al dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:12px 0 0;font-size:14px}
+.al dt{color:#8FA7B3}.al dd{margin:0}
+.al .acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.al .acts span{border:1px solid #3A5A6A;border-radius:8px;padding:6px 10px;font-size:13px}
+.al .acts span:first-child{background:var(--cyan);color:#06262B;border-color:var(--cyan)}
+.sample{font-size:13px;color:#8FA7B3;margin-top:10px}
+.fair{margin-top:22px;color:var(--muted);max-width:760px}
+/* field photos */
+.gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.gallery figure[hidden]{display:none}.gallery figure{margin:0;border-radius:12px;overflow:hidden;background:#DCE5DE;position:relative;grid-column:span 2}
+.gallery figure.wide{grid-column:span 4;grid-row:span 2}
+.gallery img{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:3/2}
+.gallery figure.wide img{aspect-ratio:auto}
+.gallery figcaption{position:absolute;left:10px;bottom:10px;right:10px;font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.gallery figcaption b{font-weight:500;background:rgba(10,20,28,.7);padding:2px 8px;border-radius:6px;margin-right:6px;text-shadow:none}
+/* evidence */
+.ev-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(24px,4vw,56px)}
+.ev{display:grid;gap:14px}
+.ev div{border:1px solid var(--rule);border-radius:12px;padding:20px;background:rgba(15,34,48,.55)}
+.ev h3{color:#fff;margin-bottom:6px}
+.ev p{color:#B9CBD2;font-size:16px}
+.big{display:grid;gap:18px;align-content:start}
+.big div{border-top:1px solid var(--rule);padding-top:16px}
+.big b{display:block;font:600 clamp(34px,4vw,48px)/1 "Space Grotesk",sans-serif;color:var(--cyan)}
+.big span{color:#B9CBD2;font-size:15px}
+.notyet{margin-top:18px;border:1px dashed #6B5A2E;border-radius:12px;padding:18px 20px;color:#E9D9AE;background:rgba(242,184,75,.06)}
+.notyet b{color:var(--amber)}
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin-top:8px;position:relative}
+.road div{padding:22px 18px 0 0;border-top:3px solid var(--teal);position:relative}
+.road div::before{content:"";position:absolute;top:-9px;left:0;width:15px;height:15px;border-radius:50%;background:var(--paper);border:3px solid var(--teal)}
+.road div.next{border-top-style:dashed;border-top-color:#9DB0B8}
+.road div.next::before{border-color:#9DB0B8}
+.road b{display:block;font:600 14px "IBM Plex Mono",monospace;color:var(--teal);margin-bottom:6px}
+.road div.next b{color:var(--muted)}
+.road p{font-size:15px;color:var(--muted)}
+.road h3{font-size:18px;margin-bottom:6px}
+/* privacy + team */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px)}
+.plist{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.plist li{padding-left:28px;position:relative;color:var(--muted)}
+.plist li::before{content:"";position:absolute;left:0;top:7px;width:14px;height:14px;border-radius:4px;border:2px solid var(--teal)}
+.plist b{color:var(--ink);font-weight:600}
+.team{display:grid;gap:14px;margin-top:18px}
+.person{background:var(--card);border:1px solid #DDE4DF;border-radius:12px;padding:18px 20px}
+.person h3{font-size:18px}
+.person .r{color:var(--teal);font-size:14px;font-weight:600;margin:2px 0 6px}
+.person p{color:var(--muted);font-size:15px}
+/* contact */
+.contact-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(24px,4vw,56px);align-items:start}
+.contact-grid ul{margin:20px 0 0;padding-left:20px;color:#B9CBD2;display:grid;gap:8px}
+form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;background:var(--night2);border:1px solid var(--rule);border-radius:14px;padding:clamp(18px,3vw,28px)}
+.f{display:grid;gap:6px}
+.f.full{grid-column:1/-1}
+label{font-size:14px;color:#C9D8DE}
+label i{color:var(--amber);font-style:normal}
+input,select,textarea{width:100%;font:16px "IBM Plex Sans",sans-serif;color:#E6F1F5;background:#0A141C;border:1px solid #2E4A5A;border-radius:10px;padding:12px 14px;min-height:48px}
+textarea{min-height:110px;resize:vertical}
+input::placeholder,textarea::placeholder{color:#6E8691}
+.hp{position:absolute;left:-5000px}
+.form-foot{grid-column:1/-1;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.form-foot small{color:#8FA7B3;font-size:14px}
+.status{grid-column:1/-1;font-size:15px;border-radius:10px;padding:12px 14px;display:none}
+.status.ok{display:block;background:rgba(92,225,230,.1);border:1px solid #2E6E73;color:#BFF3F5}
+.status.err{display:block;background:rgba(229,104,79,.1);border:1px solid #6E3A30;color:#F3C6BC}
+/* footer */
+footer{background:#060D12;color:#9FB4BE;padding:40px max(5vw,18px) 48px;font-size:15px}
+.foot{max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-end}
+.foot img{height:44px;display:block;margin-bottom:12px}
+.foot a{color:#C9D8DE}.foot-r{text-align:right}
+/* reveal */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.rv.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.link,.led{animation:none}html{scroll-behavior:auto}.btn{transition:none}}
+@media (max-width:1100px){.steps{grid-template-columns:repeat(3,minmax(0,1fr))}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.alert-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.alert-grid .phone{grid-column:1/-1;max-width:460px}.road{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:28px}}
+@media (max-width:900px){.links{display:none}.hero-grid,.demo-grid,.tag-grid,.ev-grid,.two,.contact-grid{grid-template-columns:minmax(0,1fr)}.parts{grid-template-columns:minmax(0,1fr)}.tag-sheet{max-width:460px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery figure,.gallery figure.wide{grid-column:span 2;grid-row:auto}.gallery figure.wide img{aspect-ratio:3/2}}
+@media (max-width:600px){body{font-size:16px}.facts{grid-template-columns:minmax(0,1fr)}.steps,.cards,.alert-grid,.road{grid-template-columns:minmax(0,1fr)}form{grid-template-columns:minmax(0,1fr)}.nav-in .brand img{height:32px}.spec th{width:34%}.gallery{grid-template-columns:minmax(0,1fr)}.gallery figure,.gallery figure.wide{grid-column:auto}.foot-r{text-align:left}.nav-in{gap:12px}.nav-in .btn{padding:0 12px;font-size:14px}}
+</style>
+</head>
+<body>
+
+<nav aria-label="Main">
+  <div class="nav-in">
+    <a class="brand" href="#top" aria-label="SprayTrace home"><img src="assets/logo/spraytrace-logo-on-dark.svg" alt="SprayTrace by AgSpert" width="203" height="40"></a>
+    <div class="links">
+      <a href="#how">How it works</a>
+      <a href="#tag">The tag</a>
+      <a href="#alerts">Alerts</a>
+      <a href="#evidence">Field test</a>
+      <a href="#team">Team</a>
+    </div>
+    <a class="btn btn-primary" href="#contact">Request a pilot</a>
+  </div>
+</nav>
+
+<header class="band night grid-bg hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Know every tank was sprayed, <span>while the worker is still in the section.</span></h1>
+      <p class="lead">SprayTrace is a sealed tag that straps onto the knapsack sprayers your workers already carry. It counts pump strokes, maps coverage against your sections and alerts the supervisor over a private radio link, with no mobile network and no wires to loosen.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#contact">Request a pilot</a>
+        <a class="btn btn-ghost" href="#demo">Watch the demo</a>
+      </div>
+      <div class="facts">
+        <div><b>One tag</b><span>per sprayer, nothing cut, drilled or replaced</span></div>
+        <div><b>Every 10 s</b><span>a heartbeat; a silent tag is flagged in about 30 s</span></div>
+        <div><b>Field-tested</b><span>on a working sprayer at Bokakhat, Nov 2026</span></div>
+      </div>
+    </div>
+    <figure class="sheet" style="margin:0">
+      <svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" class="bp-svg" viewBox="0 0 900 720" role="img" aria-label="Side elevation of a lever-operated knapsack sprayer. Existing parts 1 to 7 in grey. One cyan tag strapped to the tank holds modules A to D. A planned amber tank-level strip G runs down the tank wall. A dashed radio link goes from the tag to the division hub E, and alerts reach the supervisor F.">
+<rect x="162" y="312" width="216" height="186" fill="#13293A" opacity="0.8"></rect>
+<path d="M162 312 Q 216 304 270 312 T 378 312" fill="none" stroke="#3E6577" stroke-width="1.5"></path>
+<g fill="none" stroke="#7D97A3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<rect x="160" y="120" width="220" height="380" rx="30"></rect>
+<rect x="225" y="96" width="90" height="26" rx="6"></rect>
+<path d="M172 200 H192 M172 260 H192 M172 380 H192 M172 440 H192" stroke-width="1.5" opacity="0.6"></path>
+<path d="M160 470 H110 V250"></path>
+<circle cx="110" cy="236" r="14"></circle>
+<rect x="190" y="500" width="70" height="50" rx="8"></rect>
+<path d="M250 550 C 300 650, 460 650, 510 570"></path>
+<rect x="500" y="520" width="80" height="44" rx="10"></rect>
+<path d="M520 564 L540 600"></path>
+<path d="M580 536 L800 400"></path>
+<rect x="796" y="388" width="22" height="16" rx="3" transform="rotate(-37 807 396)"></rect>
+</g>
+<g stroke="#7D97A3" stroke-width="1.5" opacity="0.5" stroke-linecap="round">
+<path d="M818 384 L880 330"></path><path d="M820 390 L890 368"></path><path d="M818 396 L884 410"></path>
+</g>
+<rect x="328" y="236" width="20" height="252" rx="7" fill="none" stroke="#F2B84B" stroke-width="2" stroke-dasharray="6 5"></rect>
+<g fill="#F2B84B"><circle cx="338" cy="262" r="5"></circle><circle cx="338" cy="368" r="5"></circle><circle cx="338" cy="466" r="5"></circle></g>
+<path d="M314 300 H326" stroke="#F2B84B" stroke-width="1"></path>
+<rect x="150" y="226" width="330" height="10" rx="3" fill="none" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="150" y="314" width="330" height="10" rx="3" fill="none" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="384" y="196" width="86" height="148" rx="14" fill="#0F2A35" stroke="#5CE1E6" stroke-width="3"></rect>
+<circle class="led" cx="427" cy="226" r="7" fill="#5CE1E6"></circle>
+<rect x="400" y="256" width="54" height="8" rx="2" fill="#5CE1E6" opacity="0.8"></rect>
+<g fill="#5CE1E6"><circle cx="395" cy="207" r="3"></circle><circle cx="459" cy="207" r="3"></circle><circle cx="395" cy="333" r="3"></circle><circle cx="459" cy="333" r="3"></circle></g>
+<rect x="392" y="162" width="70" height="24" rx="12" fill="#0A141C" stroke="#5CE1E6" stroke-width="2"></rect>
+<text x="427" y="179" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="500" fill="#5CE1E6">A–D</text>
+<path class="link" d="M474 200 C 560 110, 700 96, 808 126" fill="none" stroke="#5CE1E6" stroke-width="1.8" stroke-dasharray="5 6"></path>
+<text x="520" y="80" font-family="IBM Plex Mono, monospace" font-size="12" fill="#8FCFD6">HEARTBEAT EVERY 10 s, OWN TIME SLOT</text>
+<line x1="830" y1="300" x2="830" y2="150" stroke="#5CE1E6" stroke-width="3" stroke-linecap="round"></line>
+<path d="M810 300 H850" stroke="#5CE1E6" stroke-width="3" stroke-linecap="round"></path>
+<rect x="812" y="104" width="36" height="46" rx="7" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2.5"></rect>
+<line x1="830" y1="104" x2="830" y2="70" stroke="#5CE1E6" stroke-width="2.5" stroke-linecap="round"></line>
+<g fill="none" stroke="#5CE1E6" stroke-width="2" stroke-linecap="round" opacity="0.8"><path d="M817 60 Q 830 47 843 60"></path><path d="M808 50 Q 830 28 852 50"></path></g>
+<rect x="50" y="566" width="72" height="124" rx="12" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2.5"></rect>
+<rect x="60" y="588" width="52" height="15" rx="3" fill="#F2B84B"></rect>
+<rect x="60" y="610" width="52" height="15" rx="3" fill="#F2B84B" opacity="0.55"></rect>
+<path d="M62 640 H108 M62 654 H96" stroke="#5CE1E6" stroke-width="2" opacity="0.6"></path>
+<path d="M150 606 Q 170 586 150 566 M168 616 Q 196 586 168 556" fill="none" stroke="#5CE1E6" stroke-width="2" opacity="0.8"></path>
+<rect x="492" y="212" width="300" height="176" rx="6" fill="#0A141C" stroke="#2A4B5C" stroke-width="1"></rect>
+<g font-family="IBM Plex Mono, monospace" font-size="12">
+<path d="M506 234 H534" stroke="#7D97A3" stroke-width="2.5" stroke-linecap="round"></path>
+<text x="546" y="238" fill="#B4C5CC">1–7 EXISTING, NOT MODIFIED</text>
+<text x="546" y="256" fill="#8FA7B3" font-size="11">1 TANK · 2 LEVER · 3 PUMP · 4 HOSE</text>
+<text x="546" y="272" fill="#8FA7B3" font-size="11">5 VALVE · 6 LANCE · 7 NOZZLE</text>
+<rect x="506" y="286" width="28" height="12" rx="3" fill="#5CE1E6"></rect>
+<text x="546" y="296" fill="#5CE1E6">A–F NEW · PHASE 1</text>
+<rect x="506" y="310" width="28" height="12" rx="3" fill="none" stroke="#F2B84B" stroke-width="2" stroke-dasharray="4 3"></rect>
+<text x="546" y="320" fill="#F2B84B">G PLANNED · PHASE 2</text>
+<path d="M506 340 H534" stroke="#5CE1E6" stroke-width="1.8" stroke-dasharray="5 4"></path>
+<text x="546" y="344" fill="#5CE1E6">LORA LINK, 865–868 MHz</text>
+<rect x="506" y="358" width="28" height="12" rx="3" fill="#F2B84B"></rect>
+<text x="546" y="368" fill="#F2B84B">ALERT TO THE SUPERVISOR</text>
+</g>
+<rect x="640" y="520" width="240" height="180" rx="8" fill="#0A141C" stroke="#2A4B5C" stroke-width="1"></rect>
+<text x="654" y="542" font-family="IBM Plex Mono, monospace" font-size="12" fill="#8FA7B3">INSIDE THE TAG</text>
+<rect x="656" y="554" width="208" height="132" rx="14" fill="none" stroke="#5CE1E6" stroke-width="2" stroke-dasharray="6 5"></rect>
+<rect x="670" y="592" width="32" height="32" rx="4" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<path d="M676 608 Q 681 598 686 608 T 696 608" fill="none" stroke="#5CE1E6" stroke-width="1.8"></path>
+<rect x="716" y="588" width="40" height="40" rx="4" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="726" y="598" width="20" height="20" rx="2" fill="none" stroke="#5CE1E6" stroke-width="1.8"></rect>
+<rect x="770" y="596" width="38" height="30" rx="4" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<path d="M789 596 V586 M783 584 Q 789 578 795 584" fill="none" stroke="#5CE1E6" stroke-width="1.8" stroke-linecap="round"></path>
+<rect x="822" y="584" width="30" height="48" rx="6" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="831" y="579" width="12" height="6" rx="2" fill="#5CE1E6"></rect>
+<rect x="828" y="604" width="18" height="22" rx="2" fill="#5CE1E6" opacity="0.8"></rect>
+<g font-family="IBM Plex Mono, monospace" font-size="13" font-weight="500" text-anchor="middle">
+<circle cx="686" cy="660" r="12" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="686" y="665" fill="#5CE1E6">A</text>
+<circle cx="736" cy="660" r="12" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="736" y="665" fill="#5CE1E6">B</text>
+<circle cx="789" cy="660" r="12" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="789" y="665" fill="#5CE1E6">C</text>
+<circle cx="837" cy="660" r="12" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="837" y="665" fill="#5CE1E6">D</text>
+</g>
+<g stroke="#8FA7B3" stroke-width="1" fill="none">
+<path d="M848 150 L862 172"></path>
+<path d="M86 566 L86 526"></path>
+</g>
+<g stroke="#56707C" stroke-width="1" fill="none" stroke-dasharray="2 3">
+<path d="M190 122 L150 84"></path>
+<path d="M110 222 L96 200"></path>
+<path d="M260 525 L290 525"></path>
+<path d="M380 640 L380 660"></path>
+<path d="M512 564 L470 666"></path>
+<path d="M720 449 L742 482"></path>
+<path d="M812 404 L830 424"></path>
+</g>
+<g font-family="IBM Plex Mono, monospace" font-size="15" font-weight="500" text-anchor="middle">
+<circle cx="138" cy="72" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="138" y="77" fill="#B4C5CC">1</text>
+<circle cx="90" cy="188" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="90" y="193" fill="#B4C5CC">2</text>
+<circle cx="304" cy="525" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="304" y="530" fill="#B4C5CC">3</text>
+<circle cx="380" cy="674" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="380" y="679" fill="#B4C5CC">4</text>
+<circle cx="464" cy="680" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="464" y="685" fill="#B4C5CC">5</text>
+<circle cx="752" cy="494" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="752" y="499" fill="#B4C5CC">6</text>
+<circle cx="840" cy="436" r="13" fill="#0A141C" stroke="#7D97A3" stroke-width="1.5"></circle><text x="840" y="441" fill="#B4C5CC">7</text>
+</g>
+<g font-family="IBM Plex Mono, monospace" font-size="18" font-weight="500" text-anchor="middle">
+<circle cx="868" cy="190" r="18" fill="#0A141C" stroke="#5CE1E6" stroke-width="2"></circle><text x="868" y="196" fill="#5CE1E6">E</text>
+<circle cx="86" cy="508" r="18" fill="#0A141C" stroke="#5CE1E6" stroke-width="2"></circle><text x="86" y="514" fill="#5CE1E6">F</text>
+<circle cx="296" cy="300" r="18" fill="#0A141C" stroke="#F2B84B" stroke-width="2" stroke-dasharray="4 3"></circle><text x="296" y="306" fill="#F2B84B">G</text>
+</g>
+</svg>
+      <figcaption class="tb">AG-ST-101 · system blueprint</figcaption>
+    </figure>
+  </div>
+</header>
+
+<section class="band" id="problem">
+  <div class="wrap">
+    <div class="head rv">
+      <h2>Today the only record is the number of tanks issued</h2>
+      <p class="lead">The manager sets the chemical, dose and sections. Tanks are filled at the mixing point and the supervisor moves between groups, checking a few workers at a time. Whether each section got the right litres, evenly, rests on each worker's effort.</p>
+    </div>
+    <div class="cards">
+      <div class="card rv">
+        <svg class="ic" viewBox="0 0 40 40" aria-hidden="true"><rect x="10" y="6" width="20" height="28" rx="5" fill="none" stroke="#2F6B4F" stroke-width="2.5"/><path d="M14 26 Q20 20 26 26" fill="none" stroke="#E5684F" stroke-width="2.5" stroke-linecap="round"/><path d="M20 34 V38" stroke="#E5684F" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <h3>Tanks dumped</h3><p>A full tank emptied in one corner looks the same in the register as a tank sprayed across the section.</p>
+      </div>
+      <div class="card rv">
+        <svg class="ic" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 10 H34 M6 20 H34 M6 30 H34" stroke="#2F6B4F" stroke-width="2.5" stroke-linecap="round"/><path d="M16 20 H26" stroke="#E5684F" stroke-width="5" stroke-linecap="round"/></svg>
+        <h3>Strips skipped</h3><p>Part of a section goes unsprayed or gets sprayed twice, and nobody sees it until pests come back.</p>
+      </div>
+      <div class="card rv">
+        <svg class="ic" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 6 C20 6 10 18 10 25 a10 10 0 0 0 20 0 C30 18 20 6 20 6 Z" fill="none" stroke="#2F6B4F" stroke-width="2.5"/><path d="M15 26 H25 M20 21 V31" stroke="#E5684F" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <h3>Doses off the programme</h3><p>Too much in a small patch, too little elsewhere: higher chemical bills, uneven control and residue risk for made tea.</p>
+      </div>
+      <div class="card rv">
+        <svg class="ic" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 28 C14 28 14 12 20 12 S26 28 32 28" fill="none" stroke="#2F6B4F" stroke-width="2.5"/><path d="M17 9 L23 15 M23 9 L17 15" stroke="#E5684F" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <h3>Wires and nozzles tampered</h3><p>A loosened wire or a fiddled nozzle is the first thing a worker on fixed pay reaches for to finish early.</p>
+      </div>
+    </div>
+    <div class="quote rv">
+      <p>Found days later, misuse is easy to deny. The estate manager we worked with at Bokakhat was clear that an alert only helps if it reaches the supervisor while the worker is still there.</p>
+      <small>From interviews with managers and supervisors at three estates, two in Bokakhat and one in Jorhat</small>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how" style="padding-top:0">
+  <div class="wrap">
+    <div class="head rv">
+      <h2>How a spray day runs with SprayTrace</h2>
+      <p class="lead">Workers spray as they do now. The only new task for anyone is answering an alert.</p>
+    </div>
+    <ol class="steps">
+      <li class="rv"><h3>Issue at the mixing point</h3><p>Each tank is linked to a worker and a section. A tank resting in the refill zone for about a minute counts as a fill.</p></li>
+      <li class="rv"><h3>Spray as usual</h3><p>The tag wakes on motion, counts lever strokes and how far each one swings, and logs GPS every second.</p></li>
+      <li class="rv"><h3>Report every 10 s</h3><p>A 26-byte heartbeat goes to the division hub in the tag's own GPS-timed slot. No SIM, no internet.</p></li>
+      <li class="rv"><h3>Check the alert</h3><p>The supervisor sees tank, worker, section and a map pin, calls or sends a clerk, then marks it verified or a false alarm.</p></li>
+      <li class="rv"><h3>Close the section</h3><p>Coverage, litres per hectare against the programme and skipped strips. Re-spray or sign off, then export the record.</p></li>
+    </ol>
+    <div class="parts">
+      <div class="part rv"><span class="k">A to D · on every sprayer</span><h3>The tag</h3><p>Motion sensor, GPS, radio and battery in one sealed box with tamper screws, strapped to the tank.</p></div>
+      <div class="part rv"><span class="k">E · one per division</span><h3>The division hub</h3><p>A radio receiver mounted high at the division office, plugged into the laptop. It flags any tag that goes quiet.</p></div>
+      <div class="part rv"><span class="k">F · the supervisor</span><h3>Supervisor screens</h3><p>Live map, alert inbox and section reports in English, Assamese and Hindi. On the division laptop now, on the field supervisor's Android phone in Phase 2.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band night" id="demo">
+  <div class="wrap demo-grid">
+    <div>
+      <div class="player">
+        <video controls preload="metadata" playsinline poster="assets/video/spraytrace-demo-poster.jpg">
+          <source src="assets/video/spraytrace-demo.mp4" type="video/mp4">
+          Your browser cannot play this video.
+        </video>
+      </div>
+      <p class="note">Concept animation with illustrative data, voice-over and subtitles.</p>
+    </div>
+    <div class="rv">
+      <h2>See it in just over a minute</h2>
+      <p class="lead" style="margin-top:16px">How the tag measures what was pumped, how alerts reach the supervisor and what the section report shows at the end of the day.</p>
+      <div class="cta"><a class="btn btn-primary" href="#contact">Request a pilot</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="band night grid-bg" id="tag" style="padding-top:0">
+  <div class="wrap tag-grid">
+    <figure class="tag-sheet rv" style="margin:0"><svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet" class="bp-svg" viewBox="0 0 520 680" role="img" aria-label="Exploded view of the SprayTrace tag: a lid with status LED and four tamper screws, a circuit board carrying the microcontroller, GPS, motion sensor, radio and charger, a base holding the rechargeable cell with strap slots and a USB-C port, and a planned amber tank-level strip below.">
+<g font-family="IBM Plex Mono, monospace" font-size="12" fill="#8FA7B3">
+<text x="80" y="40">LID · LED WINDOW · 4 TAMPER SCREWS</text>
+<text x="70" y="160">BOARD · MCU, MODULES A–C, CHARGER</text>
+<text x="80" y="380">BASE · CELL, USB-C PORT, STRAP SLOTS</text>
+</g>
+<rect x="80" y="50" width="360" height="68" rx="18" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2.5"></rect>
+<path d="M98 64 H422" stroke="#5CE1E6" stroke-width="2" opacity="0.5"></path>
+<circle cx="260" cy="88" r="9" fill="#5CE1E6"></circle>
+<g fill="none" stroke="#5CE1E6" stroke-width="2"><circle cx="102" cy="78" r="5"></circle><circle cx="418" cy="78" r="5"></circle><circle cx="102" cy="104" r="5"></circle><circle cx="418" cy="104" r="5"></circle></g>
+<g stroke="#3E6577" stroke-width="1.2" stroke-dasharray="4 5"><path d="M102 118 V172"></path><path d="M418 118 V172"></path><path d="M102 330 V392"></path><path d="M418 330 V392"></path></g>
+<rect x="70" y="170" width="380" height="160" rx="8" fill="#0C2029" stroke="#5CE1E6" stroke-width="2"></rect>
+<g stroke="#2F5868" stroke-width="1.5" fill="none"><path d="M170 212 H210"></path><path d="M140 298 H210 V280"></path><path d="M310 220 H336"></path><path d="M310 280 H346 V296"></path></g>
+<rect x="210" y="205" width="100" height="90" rx="5" fill="#13242E" stroke="#7FC9D1" stroke-width="1.5"></rect>
+<text x="260" y="246" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#8FCFD6">MCU</text>
+<text x="260" y="266" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#6F8E9A">ESP32</text>
+<rect x="90" y="182" width="80" height="60" rx="5" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="110" y="194" width="40" height="36" rx="3" fill="none" stroke="#5CE1E6" stroke-width="1.8"></rect>
+<rect x="100" y="282" width="40" height="34" rx="4" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<path d="M106 299 Q 111 289 116 299 T 126 299 T 136 299" fill="none" stroke="#5CE1E6" stroke-width="1.6"></path>
+<rect x="336" y="190" width="90" height="60" rx="5" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<path d="M426 210 H436 Q 442 200 448 210 T 460 210 T 472 210" fill="none" stroke="#5CE1E6" stroke-width="1.8" stroke-linecap="round"></path>
+<rect x="346" y="286" width="40" height="30" rx="4" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2"></rect>
+<path d="M356 301 H376 M366 294 V308" stroke="#5CE1E6" stroke-width="1.6"></path>
+<g font-family="IBM Plex Mono, monospace" font-size="13" font-weight="500" text-anchor="middle">
+<circle cx="130" cy="260" r="11" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="130" y="265" fill="#5CE1E6">B</text>
+<circle cx="164" cy="299" r="11" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="164" y="304" fill="#5CE1E6">A</text>
+<circle cx="381" cy="268" r="11" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="381" y="273" fill="#5CE1E6">C</text>
+<circle cx="410" cy="301" r="11" fill="#0A141C" stroke="#5CE1E6" stroke-width="1.8"></circle><text x="410" y="306" fill="#5CE1E6">D</text>
+</g>
+<rect x="80" y="390" width="360" height="80" rx="18" fill="#0F2A35" stroke="#5CE1E6" stroke-width="2.5"></rect>
+<rect x="130" y="410" width="250" height="40" rx="10" fill="none" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="380" y="422" width="10" height="16" rx="2" fill="#5CE1E6"></rect>
+<rect x="138" y="418" width="170" height="24" rx="5" fill="#5CE1E6" opacity="0.7"></rect>
+<rect x="56" y="404" width="20" height="52" rx="4" fill="none" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="444" y="404" width="20" height="52" rx="4" fill="none" stroke="#5CE1E6" stroke-width="2"></rect>
+<rect x="240" y="470" width="40" height="10" rx="3" fill="#5CE1E6"></rect>
+<path d="M260 482 V518" stroke="#F2B84B" stroke-width="1.5" stroke-dasharray="4 4"></path>
+<text x="300" y="514" font-family="IBM Plex Mono, monospace" font-size="12" fill="#F2B84B">G · LEVEL STRIP · PHASE 2</text>
+<rect x="240" y="522" width="40" height="150" rx="10" fill="none" stroke="#F2B84B" stroke-width="2" stroke-dasharray="6 5"></rect>
+<g fill="#F2B84B"><circle cx="260" cy="548" r="7"></circle><circle cx="260" cy="598" r="7"></circle><circle cx="260" cy="648" r="7"></circle></g>
+<g font-family="IBM Plex Mono, monospace" font-size="11" fill="#F7D38A"><text x="292" y="552">2/3 FULL</text><text x="292" y="602">1/3 FULL</text><text x="292" y="652">NEAR EMPTY</text></g>
+</svg></figure>
+    <div>
+      <div class="head rv" style="margin-bottom:24px">
+        <h2>The tag</h2>
+        <p class="lead">Palm-sized and sealed. It never touches the spray liquid, so there is nothing on the spray line to cut into or tamper with.</p>
+      </div>
+      <table class="spec rv">
+        <tr><th scope="row">Motion sensor</th><td>Counts pump-lever strokes and the swing of each one, so short strokes count for less. Litres are strokes times the litres per stroke, calibrated once per sprayer model with weighed water.</td></tr>
+        <tr><th scope="row">GPS</th><td>Logs the walked track every second and matches it to your section map for coverage and litres per hectare.<small>Section-level accuracy. Consumer GPS cannot resolve individual tea rows.</small></td></tr>
+        <tr><th scope="row">Radio</th><td>LoRa in the licence-exempt 865 to 868 MHz band at 21 dBm, one heartbeat every 10 s in its own slot, about 1 to 2% duty.<small>Within India's G.S.R. 853(E) limits of 500 mW e.r.p. and 2.5% duty.</small></td></tr>
+        <tr><th scope="row">Power</th><td>Rechargeable cell, charged overnight at the muster point. Target: a full spray day with margin.<small>Estimated at about 13 hours; to be measured on the bench.</small></td></tr>
+        <tr><th scope="row">Housing</th><td>Sealed case with four tamper screws, strap slots and no external wires. IP65 on the prototype, IP67 in production.</td></tr>
+        <tr><th scope="row">Phase 2</th><td>A three-point tank-level strip in the same housing to recalibrate litres per stroke and confirm when a tank is emptied.</td></tr>
+      </table>
+      <p class="note">Prototype: ESP32, MPU6050, u-blox MAX-M10S and Ebyte E32-900T30D. Production targets are design intentions that bench and field tests will confirm.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="alerts">
+  <div class="wrap">
+    <div class="head rv">
+      <h2>Alerts, not data dumps</h2>
+      <p class="lead">Managers told us they want to know what needs checking, not to read logs. SprayTrace sorts everything into two kinds.</p>
+    </div>
+    <div class="alert-grid">
+      <div class="alist rv">
+        <h3>Needs a check now</h3>
+        <ul>
+          <li><div>Tag silent<span>No heartbeat for three slots, about 30 s</span></div></li>
+          <li><div>Over-dose<span>Litres per hectare above the round's alert band</span></div></li>
+          <li><div>Under-dose or skipped area<span>Too few litres, or strips with no track</span></div></li>
+          <li><div>Fill mismatch<span>A tank back at the mixing point well short of 16 L pumped</span></div></li>
+        </ul>
+      </div>
+      <div class="alist info rv">
+        <h3>For the day report</h3>
+        <ul>
+          <li><div>Idle or removed<span>The sprayer has stopped moving or the tag is off the tank</span></div></li>
+          <li><div>Poor technique<span>Rushed or short strokes, or a walking pace off target</span></div></li>
+          <li><div>Low battery<span>Clears itself once the tag is charged</span></div></li>
+        </ul>
+      </div>
+      <div class="rv">
+        <div class="phone" role="img" aria-label="Sample alert card: Tank 11 fill mismatch, back at the mixing point after 6 litres of a 16 litre fill.">
+          <div class="bar"><span>Alert inbox</span><span>10:42</span></div>
+          <div class="al">
+            <div class="t">Tank 11 · Fill mismatch <em>Needs a check</em></div>
+            <p>Back at the mixing point after 6 L pumped from a 16 L fill. Liquid may have been dumped instead of sprayed.</p>
+            <dl><dt>Section</dt><dd>12, Division B</dd><dt>Worker</dt><dd>Group 3</dd><dt>Where</dt><dd>Mixing point 2 · open in Maps</dd></dl>
+            <div class="acts"><span>Mark verified</span><span>False alarm</span><span>Add note</span></div>
+          </div>
+        </div>
+        <p class="sample">Sample alert with illustrative data.</p>
+      </div>
+    </div>
+    <p class="fair rv">Alerts are prompts for a person to check, never automatic penalties. An alert only counts in a report after the supervisor marks it verified or a false alarm.</p>
+  </div>
+</section>
+
+<section class="band" id="field" style="padding-top:0" hidden>
+  <div class="wrap">
+    <div class="head rv">
+      <h2>Built for the tea garden</h2>
+      <p class="lead">Rain, chemical splash, shade-tree canopy and patchy mobile signal. The tag is designed for the conditions spray workers face every round.</p>
+    </div>
+    <div class="gallery">
+      <figure class="wide" hidden><img src="assets/img/hero-tag-on-sprayer.jpg" alt="SprayTrace tag strapped to a knapsack sprayer in an Assam tea garden"><figcaption><b>Concept render</b>The tag on a working knapsack sprayer</figcaption></figure>
+      <figure hidden><img src="assets/img/field-worker-spraying.jpg" alt="Spray worker walking a tea row with a tagged sprayer"><figcaption><b>Concept render</b>Spraying as usual</figcaption></figure>
+      <figure hidden><img src="assets/img/tag-closeup-studio.jpg" alt="Close-up of the sealed SprayTrace tag beside fresh tea shoots"><figcaption><b>Concept render</b>Sealed, with tamper screws</figcaption></figure>
+      <figure hidden><img src="assets/img/mixing-point.jpg" alt="Tagged sprayers lined up at a tea estate mixing point"><figcaption><b>Concept render</b>Tanks issued at the mixing point</figcaption></figure>
+      <figure hidden><img src="assets/img/division-hub.jpg" alt="Radio hub on the roof of a tea estate division office"><figcaption><b>Concept render</b>One hub per division</figcaption></figure>
+      <figure hidden><img src="assets/img/supervisor-alert.jpg" alt="Field supervisor checking an alert on an Android phone"><figcaption><b>Concept render</b>Phase 2: alerts on the supervisor's phone</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band night" id="evidence">
+  <div class="wrap">
+    <div class="head rv">
+      <h2>What we have tested so far</h2>
+      <p class="lead">We report what the prototype has shown and what it has not shown yet.</p>
+    </div>
+    <div class="ev-grid">
+      <div class="ev">
+        <div class="rv"><h3>Field run at Bokakhat Tea Estate</h3><p>In the first half of November 2026 we ran the prototype tag on a working knapsack sprayer, transmitting at 21 dBm to our base station. With untuned thresholds, its stroke count came within 10% of a manual count. It logged a GPS track through the section, and the base station kept receiving packets at 300 m and beyond without any mobile network.</p></div>
+        <div class="rv"><h3>Estate interviews</h3><p>Managers and supervisors at three estates, two in Bokakhat and one in Jorhat, plus a full spray round observed. Their requirements set the design: no external wires, alerts over data, real-time reporting and a cost ceiling near ₹1,000 per sprayer.</p></div>
+        <div class="rv"><h3>Radio plan checked against the rules</h3><p>Transmit power, channel width and duty cycle were checked against India's licence-exempt rules for 865 to 868 MHz, and the heartbeat moved to GPS-timed slots so many tags can share one hub.</p></div>
+      </div>
+      <div>
+        <div class="big rv">
+          <div><b>Within 10%</b><span>stroke count against a manual count on the first field run</span></div>
+          <div><b>300 m+</b><span>radio range held from the sprayer to the base station</span></div>
+          <div><b>3 estates</b><span>where managers and supervisors shaped the requirements</span></div>
+        </div>
+        <div class="notyet rv"><b>Not shown yet:</b> collisions with many tags at once, volume accuracy against weighed water and battery sprayers. The next tests use three tags together, a reference sensor on the lever and calibration with weighed water.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="roadmap">
+  <div class="wrap">
+    <div class="head rv">
+      <h2>From prototype to a validated system in six months</h2>
+      <p class="lead">Each stage ends with a test on real sprayers, and we move on only when it passes.</p>
+    </div>
+    <div class="road">
+      <div class="rv"><b>Now</b><h3>Prototype</h3><p>One tag and one base station built and run at Bokakhat. Supervisor screens designed as a nine-screen clickable wireframe.</p></div>
+      <div class="rv"><b>Month 3</b><h3>Measurement proven</h3><p>Three tags on real sprayers. Strokes within ±5%, volume within ±10% of weighed water, at least 95% of packets received.</p></div>
+      <div class="rv"><b>Month 5</b><h3>One division live</h3><p>10 to 20 sealed tags, a division hub and the supervisor software working end to end.</p></div>
+      <div class="rv"><b>Month 6</b><h3>Ready for a pilot</h3><p>Field trials with known volumes and staged misuse, then a validation-ready release and a pilot plan agreed with the host estate.</p></div>
+      <div class="next rv"><b>Phase 2</b><h3>Wider rollout</h3><p>Alerts on the field supervisor's Android phone, hubs on 4G, all divisions in one view and the tank-level module.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="team" style="padding-top:0">
+  <div class="wrap two">
+    <div class="rv">
+      <h2>Fair to workers by design</h2>
+      <p class="lead" style="margin-top:14px">SprayTrace tracks where spraying happens, so it has to be fair to the people doing it.</p>
+      <ul class="plist">
+        <li><b>Consent first.</b> Notice in Assamese, Hindi or Bengali, with consent recorded under the DPDP Act, 2023.</li>
+        <li><b>Only during spray shifts.</b> The tag records only while the sprayer is in use and has no camera or microphone.</li>
+        <li><b>Groups by default.</b> Reports show worker groups; named scores appear only if the estate runs an incentive scheme.</li>
+        <li><b>The estate's data.</b> In Phase 1 everything stays on the estate's own laptop.</li>
+      </ul>
+    </div>
+    <div class="rv">
+      <h2>The team</h2>
+      <div class="team">
+        <div class="person"><h3>Siddhartha Bora</h3><div class="r">Project lead and product design · Managing Director, AgSpert</div><p>Builds industry-specific products across IoT, computer vision and full-stack software. Shaped SprayTrace around what estate managers asked for and builds the supervisor software.</p></div>
+        <div class="person"><h3>Dhritiman Talukdar</h3><div class="r">Technical lead · Co-founder and CTO, AgSpert</div><p>Hardware, IoT and machine learning, with a master's in materials science and manufacturing. Designed the prototype tag, base station, firmware and calibration method.</p></div>
+        <div class="person"><h3>Bikash Bharali</h3><div class="r">Tea estate economics lead</div><p>Agricultural and soil science, tea garden economics and input costing. Owns the cost-benefit model and the dose bands drawn from Tea Research Association advisories.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band night grid-bg" id="contact">
+  <div class="wrap contact-grid">
+    <div class="rv">
+      <h2>Run a pilot on your estate</h2>
+      <p class="lead" style="margin-top:14px">We are looking for tea estates in Assam to host the first field trials. Tell us about your estate and we will get back to you about timing, the number of sprayers and what we would need from your team.</p>
+      <ul>
+        <li>We fit the tags and set up the hub at one division.</li>
+        <li>Your sprayers, chemicals and spray programme stay as they are.</li>
+        <li>Pass criteria are agreed in writing before the trial starts.</li>
+      </ul>
+    </div>
+    <form id="pilotForm" action="https://formspree.io/f/REPLACE_WITH_FORM_ID" method="POST" novalidate>
+      <input type="hidden" name="_subject" value="SprayTrace: new pilot enquiry">
+      <div class="hp" aria-hidden="true"><label for="gotcha">Leave this empty</label><input type="text" id="gotcha" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+      <div class="f"><label for="name">Your name <i>*</i></label><input id="name" name="name" autocomplete="name" required></div>
+      <div class="f"><label for="email">Email <i>*</i></label><input id="email" name="email" type="email" autocomplete="email" required></div>
+      <div class="f"><label for="org">Estate or organisation <i>*</i></label><input id="org" name="organisation" autocomplete="organization" required></div>
+      <div class="f"><label for="role">Your role</label>
+        <select id="role" name="role">
+          <option value="">Choose one</option>
+          <option>Estate owner</option><option>Manager or assistant manager</option><option>Field supervisor</option><option>Researcher or institution</option><option>Investor or partner</option><option>Other</option>
+        </select></div>
+      <div class="f"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel"></div>
+      <div class="f"><label for="sprayers">Knapsack sprayers on the estate</label><input id="sprayers" name="sprayers" type="number" min="0" inputmode="numeric" placeholder="For example 40"></div>
+      <div class="f full"><label for="msg">Message</label><textarea id="msg" name="message" placeholder="Divisions, spray programme, anything we should know"></textarea></div>
+      <div class="status" id="formStatus" role="status" aria-live="polite"></div>
+      <div class="form-foot"><button class="btn btn-primary" type="submit" id="sendBtn">Send enquiry</button><small>We use your details only to reply to this enquiry.</small></div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div>
+      <img src="assets/logo/spraytrace-logo-on-dark.svg" alt="SprayTrace by AgSpert" width="223" height="44">
+      <div>Spray monitoring for manual knapsack sprayers on tea estates.</div>
+    </div>
+    <div class="foot-r">
+      <div>AgSpert Technologies (P) Ltd., Guwahati, Assam</div>
+      
+      <div style="margin-top:6px">© 2026 AgSpert Technologies (P) Ltd.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+{
+  const io = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.rv').forEach((el) => io.observe(el));
+
+  const field = document.getElementById('field');
+  document.querySelectorAll('.gallery img').forEach((img) => {
+    const ok = () => { if (img.naturalWidth > 0) { img.closest('figure').hidden = false; field.hidden = false; } };
+    if (img.complete) ok();
+    img.addEventListener('load', ok);
+  });
+
+  const video = document.querySelector('#demo video');
+  video.addEventListener('error', () => { document.getElementById('demo').hidden = true; }, true);
+  video.querySelector('source').addEventListener('error', () => { document.getElementById('demo').hidden = true; });
+
+  const form = document.getElementById('pilotForm');
+  const status = document.getElementById('formStatus');
+  const btn = document.getElementById('sendBtn');
+  const show = (kind, text) => { status.className = 'status ' + kind; status.textContent = text; };
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (!form.checkValidity()) { show('err', 'Please fill in your name, a valid email and your estate or organisation.'); form.reportValidity(); return; }
+    if (form.action.includes('REPLACE_WITH_FORM_ID')) { show('err', 'This form is not connected yet. Please try again later.'); return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('failed');
+      form.reset();
+      show('ok', 'Thank you. Your enquiry has reached us and we will reply soon.');
+    } catch (e) {
+      show('err', 'Sorry, the enquiry could not be sent. Please check your connection and try again.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Send enquiry';
+    }
+  });
+}
+</script>
+</body>
+</html>
